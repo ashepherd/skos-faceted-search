@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>SKOS Browser</title>
+
+    <script type="text/javascript" src="facetview2/vendor/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+    <link rel="stylesheet" href="facetview2/vendor/bootstrap/css/bootstrap.min.css">
+    <script type="text/javascript" src="facetview2/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="facetview2/vendor/jquery-ui-1.8.18.custom/jquery-ui-1.8.18.custom.css">
+    <script type="text/javascript" src="facetview2/vendor/jquery-ui-1.8.18.custom/jquery-ui-1.8.18.custom.min.js"></script>
+
+    <script type="text/javascript" src="facetview2/es.js"></script>
+    <script type="text/javascript" src="facetview2/bootstrap2.facetview.theme.js"></script>
+    <script type="text/javascript" src="facetview2/jquery.facetview2.js"></script>
+    <link rel="stylesheet" href="facetview2/css/facetview.css">
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            $('.facet-view-simple').facetview({
+                search_url: 'https://search.bco-dmo.org/skos/term/_search',
+                page_size: 20,
+                sort: [{"_score" : {"order" : "desc"}}],
+                search_sortby: [
+                    {'display':'Title','field':'prefLabel.exact'},
+                ],
+                sharesave_link: true,
+                search_button: true,
+                default_freetext_fuzzify: "*",
+                default_facet_operator: "AND",
+                default_facet_order: "count",
+                default_facet_size: 15,
+                facets: [
+                    {'field': 'inScheme.prefLabel.exact', 'display': 'Vocabulary'},
+                    {'field': 'prefLabel.exact', 'display': 'Preferred Label'}
+                ],
+                render_result_record: function(options, record) {
+
+                    var html = "<tr><td>";
+
+                    html += "<strong>"+printPrefLabel(record, 0)+"</strong>";
+
+                    html += "<div><strong>Preferred Label:</strong> "+record["prefLabel"]+"</div>";
+
+                    if(record["definition"]) {
+                        html += "<div><strong>Definition:</strong> <em>"+record["definition"]+"</em></div>";
+                    }
+
+                    if(record["inScheme"]) {
+                        html += "<div><strong>Vocabulary:</strong> <a href=\""+record["inScheme"]["uri"]+"\" target='_blank'>"+record["inScheme"]["prefLabel"]+"</a></div>";
+                    }
+
+                    html += "</td></tr>";
+                    return html;
+                },
+                selected_filters_in_facet: true,
+                show_filter_field : true,
+                show_filter_logic: true
+            });
+        });
+
+        var printPrefLabel = function (record) {
+
+            var html = "";
+
+            if (record["broaderTransitive"]) {
+                var len = record["broaderTransitive"].length;
+                for (var i = len - 1; i >= 0; i--) {
+                    html += "<a href=\"" + record["broaderTransitive"][i]["uri"] + "\" target='_blank'>" + record["broaderTransitive"][i]["prefLabel"] + "</a> > ";
+                }
+            }
+
+            html += "<a href=\""+record["uri"]+ "\" target='_blank'>"+record["prefLabel"]+"</a>";
+            return html;
+        }
+
+    </script>
+
+
+    <style type="text/css">
+        .facet-view-simple{
+            width:1170px;
+            height:600px;
+            margin:20px auto 0 auto;
+        }
+    </style>
+
+</head>
+<body>
+<div class="facet-view-simple"></div>
+</body>
+</html>
